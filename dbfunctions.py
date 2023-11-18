@@ -24,7 +24,7 @@ def connectDataBase():
     except:
         print("Database not connected successfully!")
 
-def displaySchedule():
+"""def displaySchedule():
     #todo
 
 def editSchedule():
@@ -46,4 +46,4 @@ def deleteBus():
     #todo
 
 def insertTripInfo():
-    #todo
+    #todo"""
