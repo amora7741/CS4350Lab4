@@ -35,9 +35,11 @@ def displayStops():
 
 def displayDriverSchedule():
     #todo
-
-def addDrive():
-    #todo"""
+"""
+def addDriver(cur, name, phone):
+    query = "INSERT INTO Driver (DriverName, DriverTelephoneNumber) VALUES (%s, %s)"
+    recset = [name, phone]
+    cur.execute(query, recset)
 
 def addBus(cur, bus_id, model, year):
     query = "INSERT INTO Bus (BusID, Model, Year) VALUES (%s, %s, %s)"
@@ -71,7 +73,7 @@ def createTables(conn, cursor):
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS Driver (
                 DriverName VARCHAR(255) PRIMARY KEY,
-                DriverTelephoneNumber INT
+                DriverTelephoneNumber VARCHAR (20)
             );
         """)
 

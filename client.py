@@ -24,7 +24,22 @@ def switch(choice, cur, con):
         case "d":
             print("4")
         case "e":
-            print("5")
+            while True:
+                try:
+                    driverName = input("Enter driver name: ")
+                    phoneNumber = input("Enter driver's phone number: ")
+
+                    phoneNumber = ''.join(filter(str.isdigit, phoneNumber))
+
+                    addDriver(cur, driverName, phoneNumber)
+                    con.commit()
+
+                    print("\nDriver successfully added!")
+
+                    break
+                except Exception as e:
+                    print(f"Exception: {e}")
+                    con.rollback()
         case "f":
             while True:
                 try:
