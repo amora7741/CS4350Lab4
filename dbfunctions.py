@@ -46,10 +46,20 @@ def addBus(cur, bus_id, model, year):
     recset = [bus_id, model, year]
     cur.execute(query, recset)
 
-"""def deleteBus():
-    #todo
+def deleteBus(cur, busID):
+    checkValid = "SELECT * FROM Bus WHERE busid = %s"
+    recset = [busID]
+    cur.execute(checkValid, recset)
+    existingBus = cur.fetchone()
 
-def insertTripInfo():
+    if existingBus is None:
+        raise Exception(f"Bus with ID {busID} does not exist.")
+
+    deleteQuery = "DELETE FROM Bus WHERE busid = %s"
+    cur.execute(deleteQuery, recset)
+
+
+"""def insertTripInfo():
     #todo"""
 
 def createTables(conn, cursor):

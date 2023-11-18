@@ -58,7 +58,21 @@ def switch(choice, cur, con):
                     con.rollback()
 
         case "g":
-            print("7")
+            while True:
+                try:
+                    busID = getValidInput("Enter busID: ", int)
+
+                    deleteBus(cur, busID)
+                    con.commit()
+
+                    print(f"Bus {busID} successfully deleted!")
+                    break
+
+                except Exception as e:
+                    print(f"Exception: {e}")
+                    con.rollback()
+
+
         case "h":
             print("8")
         case "q":
