@@ -40,7 +40,9 @@ def addDrive():
     #todo"""
 
 def addBus(cur, bus_id, model, year):
-    cur.execute("INSERT INTO Bus (BusID, Model, Year) VALUES (%s, %s, %s)", (bus_id, model, year))
+    query = "INSERT INTO Bus (BusID, Model, Year) VALUES (%s, %s, %s)"
+    recset = [bus_id, model, year]
+    cur.execute(query, recset)
 
 """def deleteBus():
     #todo

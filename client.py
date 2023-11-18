@@ -35,9 +35,12 @@ def switch(choice, cur, con):
                     addBus(cur, busID, model, year)
                     con.commit()
 
+                    print("\nBus successfully added!")
+
                     break
                 except Exception as e:
                     print(f"Exception: {e}")
+                    con.rollback()
 
         case "g":
             print("7")
