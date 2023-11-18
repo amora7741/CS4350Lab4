@@ -13,7 +13,7 @@ def printMenu():
 [q] Exit program
 """)
     
-def switch(choice):
+def switch(choice, cur, con):
     match choice:
         case "a":
             print("1")
@@ -26,23 +26,45 @@ def switch(choice):
         case "e":
             print("5")
         case "f":
-            print("6")
+            while True:
+                try:
+                    busID = getValidInput("Enter busID: ", int)
+                    model = input("Enter model: ")
+                    year = getValidInput("Enter year: ", int)
+
+                    addBus(cur, busID, model, year)
+                    con.commit()
+
+                    break
+                except Exception as e:
+                    print(f"Exception: {e}")
+
         case "g":
             print("7")
         case "h":
             print("8")
         case "q":
+            cur.close()
+            con.close()
             print("Goodbye.")
         case _:
             print("Invalid choice.")
 
+def getValidInput(prompt, inputType):
+    while True:
+        try:
+            userInput = inputType(input(prompt))
+            return userInput
+        except ValueError:
+            print(f"Invalid input. Please enter a valid {inputType.__name__}.")
+
 if __name__ == '__main__':
     conn = connectDataBase()
-    cursor = conn.cursor()
+    cur = conn.cursor()
 
     choice = ""
     while choice != "q":
         printMenu()
         choice = input("Enter choice: ")
 
-        switch(choice)
+        switch(choice, cur, conn)

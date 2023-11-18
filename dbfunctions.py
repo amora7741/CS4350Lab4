@@ -37,12 +37,12 @@ def displayDriverSchedule():
     #todo
 
 def addDrive():
-    #todo
+    #todo"""
 
-def addBus():
-    #todo
+def addBus(cur, bus_id, model, year):
+    cur.execute("INSERT INTO Bus (BusID, Model, Year) VALUES (%s, %s, %s)", (bus_id, model, year))
 
-def deleteBus():
+"""def deleteBus():
     #todo
 
 def insertTripInfo():
