@@ -62,6 +62,8 @@ if __name__ == '__main__':
     conn = connectDataBase()
     cur = conn.cursor()
 
+    createTables(conn, cur)
+
     choice = ""
     while choice != "q":
         printMenu()
