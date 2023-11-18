@@ -23,3 +23,27 @@ def connectDataBase():
 
     except:
         print("Database not connected successfully!")
+
+def displaySchedule():
+    #todo
+
+def editSchedule():
+    #todo
+
+def displayStops():
+    #todo
+
+def displayDriverSchedule():
+    #todo
+
+def addDrive():
+    #todo
+
+def addBus():
+    #todo
+
+def deleteBus():
+    #todo
+
+def insertTripInfo():
+    #todo
