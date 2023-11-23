@@ -24,8 +24,36 @@ def connectDataBase():
     except:
         print("Database not connected successfully!")
 
-#def displaySchedule():
-    #todo
+def displaySchedule(cur, startLocation, destination, date):
+    query = """
+        SELECT 
+            "T".StartLocationName,
+            "T".DestinationName,
+            "TO".Date,
+            "TO".ScheduledStartTime,
+            "TO".ScheduledArrivalTime,
+            "TO".DriverName,
+            "TO".BusID
+        FROM 
+            Trip "T"
+        INNER JOIN 
+            TripOffering "TO" ON "T".TripNumber = "TO".TripNumber
+        WHERE 
+            "T".StartLocationName = %s AND
+            "T".DestinationName = %s AND
+            "TO".Date = %s;
+    """
+
+    recset = (startLocation, destination, date)
+
+    cur.execute(query, recset)
+    output = cur.fetchall()
+
+    if not output:
+        raise Exception("There are no trip offerings for this trip.")
+    
+    for row in output:
+        print(row)
 
 #def editSchedule():
     #todo
@@ -64,7 +92,7 @@ def addBus(cur, bus_id, model, year):
     cur.execute(query, recset)
 
 def deleteBus(cur, busID):
-    checkValid = "SELECT * FROM Bus WHERE busid = %s"
+    checkValid = "SELECT * FROM Bus WHERE BusID = %s"
     recset = [busID]
     cur.execute(checkValid, recset)
     existingBus = cur.fetchone()
@@ -116,7 +144,7 @@ def createTables(conn, cursor):
                 TripNumber INT,
                 Date VARCHAR(255),
                 ScheduledStartTime VARCHAR(255),
-                SecheduledArrivalTime VARCHAR(255),
+                ScheduledArrivalTime VARCHAR(255),
                 DriverName VARCHAR(255),
                 BusID INT,
                 PRIMARY KEY (TripNumber, Date, ScheduledStartTime),

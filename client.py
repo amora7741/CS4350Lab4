@@ -16,7 +16,19 @@ def printMenu():
 def switch(choice, cur, con):
     match choice.lower():
         case "a":
-            print("1")
+            while True:
+                try:
+                    startLocation = input("Enter the starting location: ").lower()
+                    destination = input("Enter the destination: ").lower()
+                    date = input("Enter the date in MM-DD-YYYY format: ")
+
+                    displaySchedule(cur, startLocation, destination, date)
+
+                    break
+                except Exception as e:
+                    print(f"Exception: {e}")
+                    con.rollback()
+
         case "b":
             print("2")
         case "c":
