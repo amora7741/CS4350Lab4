@@ -104,8 +104,36 @@ def deleteBus(cur, busID):
     cur.execute(deleteQuery, recset)
 
 
-#def insertTripInfo():
-    #todo
+def insertTripInfo(cur, tripNumber, date, scheduledStart, actualStart, actualArrival, stopNum, numPassIn, numPassOut):
+    query = "SELECT * FROM TripOffering WHERE TripNumber = %s AND Date = %s AND ScheduledStartTime = %s"
+    recset = [tripNumber, date, scheduledStart]
+    cur.execute(query, recset)
+
+    data = cur.fetchall()
+    if not data:
+        raise Exception("This trip offering does not exist.")
+    
+    scheduledArrival = data[0][3]
+
+    query = "SELECT * FROM Stop WHERE StopNumber = %s"
+    recset = [stopNum]
+    cur.execute(query, recset)
+
+    data = cur.fetchone()
+
+    if data is None:
+        raise Exception(f"Stop number {stopNum} does not exist.")
+    
+    query = """
+        INSERT INTO ActualTripStopInfo 
+            (TripNumber, Date, ScheduledStartTime, StopNumber, ScheduledArrivalTime, 
+            ActualStartTime, ActualArrivalTime, NumberOfPassengerIn, NumberOfPassengerOut) 
+        VALUES 
+            (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+    """
+
+    recset = [tripNumber, date, scheduledStart, stopNum, scheduledArrival, actualStart, actualArrival, numPassIn, numPassOut]
+    cur.execute(query, recset)
 
 def createTables(conn, cursor):
     try:

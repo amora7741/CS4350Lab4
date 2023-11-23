@@ -96,7 +96,27 @@ def switch(choice, cur, con):
 
 
         case "h":
-            print("8")
+            while True:
+                try:
+                    tripNumber = getValidInput("Enter the trip number for the offering: ", int)
+                    date = input("Enter the date for the offering in MM-DD-YYYY format: ")
+                    scheduledStart = input("Enter the scheduled start time for the offering: ")
+                    actualStartTime = input("Enter the actual start time of the trip: ")
+                    actualArrivalTime = input("Enter the actual arrival time of the trip: ")
+                    stopNumber = getValidInput("Enter the stop number: ", int)
+                    numberofPassengersIn = getValidInput("How many passengers entered at this stop? ", int)
+                    numberofPassengersOut = getValidInput("How many passengers exited at this stop? ", int)
+
+                    insertTripInfo(cur, tripNumber, date, scheduledStart, actualStartTime, actualArrivalTime, stopNumber, numberofPassengersIn, numberofPassengersOut)
+                    con.commit()
+
+                    print("Trip info successfully added!")
+
+                except Exception as e:
+                    print(f"Exception: {e}")
+                    con.rollback()
+
+
         case "q":
             cur.close()
             con.close()
