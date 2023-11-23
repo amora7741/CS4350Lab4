@@ -14,121 +14,101 @@ def printMenu():
 """)
     
 def switch(choice, cur, con):
-    match choice.lower():
-        case "a":
-            while True:
-                try:
-                    startLocation = input("Enter the starting location: ").lower()
-                    destination = input("Enter the destination: ").lower()
-                    date = input("Enter the date in MM-DD-YYYY format: ")
+    if choice.lower() == "a":
+        startLocation = handleInput("Enter the starting location or [R] to return: ", str)
+        if startLocation:
+            destination = handleInput("Enter the destination: ", str)
+            date = handleInput("Enter the date in MM-DD-YYYY format: ")
+            try:
+                displaySchedule(cur, startLocation, destination, date)
+            except Exception as e:
+                print(f"Exception: {e}")
+                con.rollback()
 
-                    displaySchedule(cur, startLocation, destination, date)
+    elif choice.lower() == "b":
+        pass
 
-                    break
-                except Exception as e:
-                    print(f"Exception: {e}")
-                    con.rollback()
+    elif choice.lower() == "c":
+        tripNumber = handleInput("Enter trip number or [R] to return: ", int)
+        if tripNumber is not None:
+            try:
+                displayStops(cur, tripNumber)
+            except Exception as e:
+                print(f"Exception: {e}")
+                con.rollback()
 
-        case "b":
-            print("2")
-        case "c":
-            while True:
-                try:
-                    tripNumber = getValidInput("Enter trip number: ", int)
+    elif choice.lower() == "d":
+        pass
 
-                    displayStops(cur, tripNumber)
+    elif choice.lower() == "e":
+        driverName = handleInput("Enter driver name or [R] to return: ", str)
+        if driverName:
+            phoneNumber = handleInput("Enter driver's phone number: ", str)
+            try:
+                addDriver(cur, driverName, phoneNumber)
+                con.commit()
+                print("\nDriver successfully added!")
+            except Exception as e:
+                print(f"Exception: {e}")
+                con.rollback()
 
-                    break
-                
-                except Exception as e:
-                    print(f"Exception: {e}")
-                    con.rollback()
-        case "d":
-            print("4")
-        case "e":
-            while True:
-                try:
-                    driverName = input("Enter driver name: ")
-                    phoneNumber = input("Enter driver's phone number: ")
+    elif choice.lower() == "f":
+        busID = handleInput("Enter busID or [R] to return: ", int)
+        if busID is not None:
+            model = handleInput("Enter model: ", str)
+            year = handleInput("Enter year: ", int)
+            try:
+                addBus(cur, busID, model, year)
+                con.commit()
+                print("\nBus successfully added!")
+            except Exception as e:
+                print(f"Exception: {e}")
+                con.rollback()
 
-                    phoneNumber = ''.join(filter(str.isdigit, phoneNumber))
+    elif choice.lower() == "g":
+        busID = handleInput("Enter busID to delete or [R] to return: ", int)
+        if busID is not None:
+            try:
+                deleteBus(cur, busID)
+                con.commit()
+                print(f"Bus {busID} successfully deleted!")
+            except Exception as e:
+                print(f"Exception: {e}")
+                con.rollback()
 
-                    addDriver(cur, driverName, phoneNumber)
-                    con.commit()
+    elif choice.lower() == "h":
+        tripNumber = handleInput("Enter the trip number for the offering or [R] to return: ", int)
+        if tripNumber is not None:
+            date = handleInput("Enter the date for the offering in MM-DD-YYYY format: ")
+            scheduledStart = handleInput("Enter the scheduled start time for the offering: ")
+            actualStartTime = handleInput("Enter the actual start time of the trip: ")
+            actualArrivalTime = handleInput("Enter the actual arrival time of the trip: ")
+            stopNumber = handleInput("Enter the stop number: ", int)
+            numberofPassengersIn = handleInput("How many passengers entered at this stop? ", int)
+            numberofPassengersOut = handleInput("How many passengers exited at this stop? ", int)
+            try:
+                insertTripInfo(cur, tripNumber, date, scheduledStart, actualStartTime, actualArrivalTime, stopNumber, numberofPassengersIn, numberofPassengersOut)
+                con.commit()
+                print("Trip info successfully added!")
+            except Exception as e:
+                print(f"Exception: {e}")
+                con.rollback()
 
-                    print("\nDriver successfully added!")
-
-                    break
-                except Exception as e:
-                    print(f"Exception: {e}")
-                    con.rollback()
-        case "f":
-            while True:
-                try:
-                    busID = getValidInput("Enter busID: ", int)
-                    model = input("Enter model: ")
-                    year = getValidInput("Enter year: ", int)
-
-                    addBus(cur, busID, model, year)
-                    con.commit()
-
-                    print("\nBus successfully added!")
-
-                    break
-                except Exception as e:
-                    print(f"Exception: {e}")
-                    con.rollback()
-
-        case "g":
-            while True:
-                try:
-                    busID = getValidInput("Enter busID: ", int)
-
-                    deleteBus(cur, busID)
-                    con.commit()
-
-                    print(f"Bus {busID} successfully deleted!")
-                    break
-
-                except Exception as e:
-                    print(f"Exception: {e}")
-                    con.rollback()
-
-
-        case "h":
-            while True:
-                try:
-                    tripNumber = getValidInput("Enter the trip number for the offering: ", int)
-                    date = input("Enter the date for the offering in MM-DD-YYYY format: ")
-                    scheduledStart = input("Enter the scheduled start time for the offering: ")
-                    actualStartTime = input("Enter the actual start time of the trip: ")
-                    actualArrivalTime = input("Enter the actual arrival time of the trip: ")
-                    stopNumber = getValidInput("Enter the stop number: ", int)
-                    numberofPassengersIn = getValidInput("How many passengers entered at this stop? ", int)
-                    numberofPassengersOut = getValidInput("How many passengers exited at this stop? ", int)
-
-                    insertTripInfo(cur, tripNumber, date, scheduledStart, actualStartTime, actualArrivalTime, stopNumber, numberofPassengersIn, numberofPassengersOut)
-                    con.commit()
-
-                    print("Trip info successfully added!")
-
-                except Exception as e:
-                    print(f"Exception: {e}")
-                    con.rollback()
+    elif choice.lower() == "q":
+        cur.close()
+        con.close()
+        print("Goodbye.")
+    else:
+        print("Invalid choice.")
 
 
-        case "q":
-            cur.close()
-            con.close()
-            print("Goodbye.")
-        case _:
-            print("Invalid choice.")
-
-def getValidInput(prompt, inputType):
+def handleInput(prompt, inputType=None):
     while True:
+        userInput = input(prompt)
+        if userInput.lower() == 'r':
+            return None
         try:
-            userInput = inputType(input(prompt))
-            return userInput
+            return inputType(userInput) if inputType else userInput
         except ValueError:
             print(f"Invalid input. Please enter a valid {inputType.__name__}.")
 
@@ -138,9 +118,9 @@ if __name__ == '__main__':
 
     createTables(conn, cur)
 
-    choice = ""
-    while choice != "q":
+    while True:
         printMenu()
         choice = input("Enter choice: ")
-
+        if choice.lower() == 'q':
+            break
         switch(choice, cur, conn)
