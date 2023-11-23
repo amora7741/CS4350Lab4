@@ -14,7 +14,7 @@ def printMenu():
 """)
     
 def switch(choice, cur, con):
-    match choice:
+    match choice.lower():
         case "a":
             print("1")
         case "b":
