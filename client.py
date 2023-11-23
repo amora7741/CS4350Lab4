@@ -20,7 +20,17 @@ def switch(choice, cur, con):
         case "b":
             print("2")
         case "c":
-            print("3")
+            while True:
+                try:
+                    tripNumber = getValidInput("Enter trip number: ", int)
+
+                    displayStops(cur, tripNumber)
+
+                    break
+                
+                except Exception as e:
+                    print(f"Exception: {e}")
+                    con.rollback()
         case "d":
             print("4")
         case "e":

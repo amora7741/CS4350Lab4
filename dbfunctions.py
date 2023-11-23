@@ -24,18 +24,35 @@ def connectDataBase():
     except:
         print("Database not connected successfully!")
 
-"""def displaySchedule():
+#def displaySchedule():
     #todo
 
-def editSchedule():
+#def editSchedule():
     #todo
 
-def displayStops():
+def displayStops(cur, tripNumber):
+    query = "SELECT * FROM Trip WHERE TripNumber = %s"
+    recset = [tripNumber]
+    cur.execute(query, recset)
+    existingTrip = cur.fetchone()
+
+    if existingTrip is None:
+        raise Exception(f"Trip with ID {tripNumber} does not exist.")
+    
+    query = "SELECT * FROM TripStopInfo WHERE TripNumber = %s"
+    cur.execute(query, recset)
+    stopInfo = cur.fetchall()
+
+    if(len(stopInfo) == 0):
+        print("This trip has no stop data.")
+        return
+    
+    for info in stopInfo:
+        print(info)
+
+#def displayDriverSchedule():
     #todo
 
-def displayDriverSchedule():
-    #todo
-"""
 def addDriver(cur, name, phone):
     query = "INSERT INTO Driver (DriverName, DriverTelephoneNumber) VALUES (%s, %s)"
     recset = [name, phone]
@@ -59,8 +76,8 @@ def deleteBus(cur, busID):
     cur.execute(deleteQuery, recset)
 
 
-"""def insertTripInfo():
-    #todo"""
+#def insertTripInfo():
+    #todo
 
 def createTables(conn, cursor):
     try:
