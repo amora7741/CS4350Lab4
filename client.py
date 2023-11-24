@@ -20,7 +20,7 @@ def switch(choice, cur, con):
             destination = handleInput("Enter the destination: ", str)
             date = handleInput("Enter the date in MM-DD-YYYY format: ", str)
             try:
-                displaySchedule(cur, startLocation, destination, date)
+                displaySchedule(cur, startLocation.lower(), destination.lower(), date)
             except Exception as e:
                 print(f"Exception: {e}")
                 con.rollback()
@@ -42,7 +42,7 @@ def switch(choice, cur, con):
         if driverName:
             startDate = handleInput("Enter the date in MM-DD-YYYY format: ", str)
             try:
-                displayDriverSchedule(cur, driverName, startDate)
+                displayDriverSchedule(cur, driverName.lower(), startDate)
             except Exception as e:
                 print(f"Exception: {e}")
                 con.rollback()
@@ -51,8 +51,9 @@ def switch(choice, cur, con):
         driverName = handleInput("Enter driver name or [R] to return: ", str)
         if driverName:
             phoneNumber = handleInput("Enter driver's phone number: ", str)
+            phoneNumber = ''.join(filter(str.isdigit, phoneNumber))
             try:
-                addDriver(cur, driverName, phoneNumber)
+                addDriver(cur, driverName.lower(), phoneNumber)
                 con.commit()
                 print("\nDriver successfully added!")
             except Exception as e:
