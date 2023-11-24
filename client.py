@@ -18,7 +18,7 @@ def switch(choice, cur, con):
         startLocation = handleInput("Enter the starting location or [R] to return: ", str)
         if startLocation:
             destination = handleInput("Enter the destination: ", str)
-            date = handleInput("Enter the date in MM-DD-YYYY format: ")
+            date = handleInput("Enter the date in MM-DD-YYYY format: ", str)
             try:
                 displaySchedule(cur, startLocation, destination, date)
             except Exception as e:
@@ -86,10 +86,10 @@ def switch(choice, cur, con):
     elif choice.lower() == "h":
         tripNumber = handleInput("Enter the trip number for the offering or [R] to return: ", int)
         if tripNumber is not None:
-            date = handleInput("Enter the date for the offering in MM-DD-YYYY format: ")
-            scheduledStart = handleInput("Enter the scheduled start time for the offering: ")
-            actualStartTime = handleInput("Enter the actual start time of the trip: ")
-            actualArrivalTime = handleInput("Enter the actual arrival time of the trip: ")
+            date = handleInput("Enter the date for the offering in MM-DD-YYYY format: ", str)
+            scheduledStart = handleInput("Enter the scheduled start time for the offering: ", str)
+            actualStartTime = handleInput("Enter the actual start time of the trip: ", str)
+            actualArrivalTime = handleInput("Enter the actual arrival time of the trip: ", str)
             stopNumber = handleInput("Enter the stop number: ", int)
             numberofPassengersIn = handleInput("How many passengers entered at this stop? ", int)
             numberofPassengersOut = handleInput("How many passengers exited at this stop? ", int)
