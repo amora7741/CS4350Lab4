@@ -1,5 +1,6 @@
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from datetime import datetime, timedelta
 
 def connectDataBase():
     DB_NAME = "CS4350_Lab4"
@@ -78,8 +79,31 @@ def displayStops(cur, tripNumber):
     for row in stopInfo:
         print(', '.join(map(str, row.values())))
 
-#def displayDriverSchedule():
-    #todo
+def displayDriverSchedule(cur, driverName, startDate):
+    try:
+        endDate = (datetime.strptime(startDate, "%m-%d-%Y") + timedelta(days=6)).strftime("%m-%d-%Y")
+    except Exception as e:
+        raise Exception(f"The date was not formatted properly.")
+    
+    query = "SELECT * FROM Driver WHERE DriverName = %s"
+    recset = [driverName]
+    cur.execute(query, recset)
+    existingDriver = cur.fetchone()
+
+    if existingDriver is None:
+        raise Exception(f"The driver {driverName} does not exist!")
+    
+    query = """SELECT * FROM TripOffering "TO" WHERE "TO".DriverName = %s AND "TO".Date BETWEEN %s AND %s"""
+    recset = [driverName, startDate, endDate]
+    cur.execute(query, recset)
+
+    schedule = cur.fetchall()
+
+    if not schedule:
+        raise Exception(f"No schedule found for {driverName} in the given week.")
+
+    for trip in schedule:
+        print(', '.join(map(str, trip.values())))
 
 def addDriver(cur, name, phone):
     query = "INSERT INTO Driver (DriverName, DriverTelephoneNumber) VALUES (%s, %s)"

@@ -38,7 +38,14 @@ def switch(choice, cur, con):
                 con.rollback()
 
     elif choice.lower() == "d":
-        pass
+        driverName = handleInput("Enter the driver's name: ", str)
+        if driverName:
+            startDate = handleInput("Enter the date in MM-DD-YYYY format: ", str)
+            try:
+                displayDriverSchedule(cur, driverName, startDate)
+            except Exception as e:
+                print(f"Exception: {e}")
+                con.rollback()
 
     elif choice.lower() == "e":
         driverName = handleInput("Enter driver name or [R] to return: ", str)
