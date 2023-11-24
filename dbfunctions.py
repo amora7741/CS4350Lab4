@@ -53,7 +53,7 @@ def displaySchedule(cur, startLocation, destination, date):
         raise Exception("There are no trip offerings for this trip.")
     
     for row in output:
-        print(row)
+        print(', '.join(map(str, row.values())))
 
 #def editSchedule():
     #todo
@@ -75,8 +75,8 @@ def displayStops(cur, tripNumber):
         print("This trip has no stop data.")
         return
     
-    for info in stopInfo:
-        print(info)
+    for row in stopInfo:
+        print(', '.join(map(str, row.values())))
 
 #def displayDriverSchedule():
     #todo
