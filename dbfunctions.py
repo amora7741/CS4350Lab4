@@ -287,9 +287,20 @@ def displayStops(cur, tripNumber):
         if confirmAddition(prompt):
             addTripStopInfo(cur, tripNumber)
         return
+    
+    headers = ["tripnumber", "stopnumber", "sequencenumber", "drivingtime"]
+    maxLengths = {header: len(header) for header in headers}
 
     for row in stopInfo:
-        print(', '.join(map(str, row.values())))
+        for header in headers:
+            maxLengths[header] = max(maxLengths[header], len(str(row[header])))
+
+    headerLine = "   ".join(header.capitalize().ljust(maxLengths[header]) for header in headers)
+    print(headerLine)
+    print("=" * len(headerLine))
+    
+    for row in stopInfo:
+        print("   ".join(str(row[header]).ljust(maxLengths[header]) for header in headers))
 
 def addTripStopInfo(cur, tripNumber):
     stopCount = handleInput("How many stops would you like to add? ", int)
