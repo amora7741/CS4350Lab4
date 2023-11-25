@@ -378,11 +378,12 @@ def insertTripInfo(cur, tripNumber, date, scheduledStart, actualStart, actualArr
     recset = [tripNumber, date, scheduledStart]
     cur.execute(query, recset)
 
-    data = cur.fetchall()
-    if not data:
+    data = cur.fetchone()
+    if data is None:
         raise Exception("This trip offering does not exist.")
     
-    scheduledArrival = data[0][3]
+    valuesList = list(data.values())
+    scheduledArrival = valuesList[3]
 
     query = "SELECT * FROM Stop WHERE StopNumber = %s"
     recset = [stopNum]
