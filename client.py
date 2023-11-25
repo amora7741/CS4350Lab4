@@ -149,3 +149,5 @@ if __name__ == '__main__':
         if choice.lower() == 'q':
             break
         switch(choice, cur, conn)
+
+        input("\nPress enter to continue...\n")

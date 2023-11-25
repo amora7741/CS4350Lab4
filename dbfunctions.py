@@ -102,6 +102,8 @@ def deleteOffering(cur):
 
     cur.execute(query, recset)
 
+    print("Offering successfully deleted!")
+
 def addOfferings(cur):
     prompt = "\nWould you like to add those missing entries into the parent tables?\nEnter 'y' to add or 'n' to cancel: "
     numberToAdd = handleInput("How many would you like to add? (Enter [R] to return): ", int)
@@ -132,6 +134,8 @@ def addOfferings(cur):
     addMissingEntries(cur, missingTrips, missingDrivers, missingBusIDs)
 
     addTripOfferingsToDB(cur, setOfTripOfferings)
+
+    print("Trip offering successfuly added!")
 
 def changeDriver(cur):
     prompt = "\nThe given driver does not exist! Would you like to add them? [y/n]: "
