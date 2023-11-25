@@ -217,9 +217,20 @@ def displayDriverSchedule(cur, driverName, startDate):
 
     if not schedule:
         raise Exception(f"No schedule found for {driverName} in the given week.")
+    
+    # Use lowercase for header names
+    headers = ["tripnumber", "date", "scheduledstarttime", "scheduledarrivaltime", "drivername", "busid"]
+    max_lengths = {header: len(header) for header in headers}
+    for trip in schedule:
+        for header in headers:
+            max_lengths[header] = max(max_lengths[header], len(str(trip[header])))
+
+    header_line = "   ".join(header.capitalize().ljust(max_lengths[header]) for header in headers)
+    print(header_line)
+    print("=" * len(header_line))
 
     for trip in schedule:
-        print(', '.join(map(str, trip.values())))
+        print("   ".join(str(trip[header]).ljust(max_lengths[header]) for header in headers))
 
 def addDriver(cur, name, phone):
     query = "INSERT INTO Driver (DriverName, DriverTelephoneNumber) VALUES (%s, %s)"
