@@ -1,6 +1,7 @@
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from datetime import datetime, timedelta
+from client import handleInput
 
 def connectDataBase():
     DB_NAME = "CS4350_Lab4"
@@ -56,8 +57,32 @@ def displaySchedule(cur, startLocation, destination, date):
     for row in output:
         print(', '.join(map(str, row.values())))
 
-#def editSchedule():
-    #todo
+def editSchedule(cur, choice):
+    if choice.lower() == "a":
+        deleteOffering(cur)
+
+def deleteOffering(cur):
+    tripNumber = handleInput("Enter the trip number or [R] to return: ", int)
+
+    if tripNumber:
+        date = handleInput("Enter the date for the offering: ", str)
+        scheduledStart = handleInput("Enter the scheduled start time for the offering: ", str)
+    else:
+        return
+
+    tripQuery = "SELECT * FROM TripOffering WHERE TripNumber = %s AND Date = %s AND ScheduledStartTime = %s"
+    recset = [tripNumber, date, scheduledStart]
+
+    cur.execute(tripQuery, recset)
+
+    existingTrip = cur.fetchone()
+
+    if existingTrip is None:
+        raise Exception("This trip offering does not exist!")
+
+    query = "DELETE FROM TripOffering WHERE TripNumber = %s AND Date = %s AND ScheduledStartTime = %s"
+
+    cur.execute(query, recset)
 
 def displayStops(cur, tripNumber):
     query = "SELECT * FROM Trip WHERE TripNumber = %s"

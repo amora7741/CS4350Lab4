@@ -13,6 +13,14 @@ def printMenu():
 [q] Exit program
 """)
     
+def editMenu():
+    print("""
+[a] Deleting trip offering
+[b] Add a set of trip offerings
+[c] Change the driver for a trip offering
+[d] Change the bus for a trip offering
+""")
+    
 def switch(choice, cur, con):
     if choice.lower() == "a":
         startLocation = handleInput("Enter the starting location or [R] to return: ", str)
@@ -26,7 +34,16 @@ def switch(choice, cur, con):
                 con.rollback()
 
     elif choice.lower() == "b":
-        pass
+        editMenu()
+
+        choice = handleInput("Enter choice or [R] to return: ", str)
+        if choice:
+            try:
+                editSchedule(cur, choice)
+                con.commit()
+            except Exception as e:
+                print(f"Exception: {e}")
+                con.rollback()
 
     elif choice.lower() == "c":
         tripNumber = handleInput("Enter trip number or [R] to return: ", int)
