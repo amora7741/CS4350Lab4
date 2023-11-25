@@ -87,7 +87,10 @@ def deleteOffering(cur):
     cur.execute(query, recset)
 
 def addOfferings(cur):
-    numberToAdd = handleInput("How many Trip Offerings to add?: ", int)
+    numberToAdd = handleInput("How many would you like to add? (Enter [R] to return): ", int)
+
+    if not numberToAdd:
+        return
 
     setOfTripOfferings = []
     for i in range(1, numberToAdd + 1):
@@ -218,7 +221,6 @@ def displayDriverSchedule(cur, driverName, startDate):
     if not schedule:
         raise Exception(f"No schedule found for {driverName} in the given week.")
     
-    # Use lowercase for header names
     headers = ["tripnumber", "date", "scheduledstarttime", "scheduledarrivaltime", "drivername", "busid"]
     max_lengths = {header: len(header) for header in headers}
     for trip in schedule:
