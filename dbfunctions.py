@@ -74,8 +74,8 @@ def editSchedule(cur, choice):
         addOfferings(cur)
     elif choice.lower() == "c":
         changeDriver(cur)
-    #elif choice.lower() == "d":
-        #changeBus(cur)
+    elif choice.lower() == "d":
+        changeBus(cur)
     else:
         raise Exception("Invalid choice!")
 
@@ -134,7 +134,7 @@ def addOfferings(cur):
     addTripOfferingsToDB(cur, setOfTripOfferings)
 
 def changeDriver(cur):
-    prompt = "\nThe given driver does not exist! Would you like to add them? [y/n]"
+    prompt = "\nThe given driver does not exist! Would you like to add them? [y/n]: "
     tripNumber = handleInput("Enter the trip number for the offering or [R] to return: ", int)
     
     if not tripNumber:
@@ -158,6 +158,7 @@ def changeDriver(cur):
     if missingDrivers:
         if confirmAddition(prompt):
             addMissingDrivers(cur, missingDrivers)
+            print("New driver added!\n")
         else:
             return
 
@@ -166,6 +167,41 @@ def changeDriver(cur):
 
     cur.execute(query, recset)
     print("Driver updated successfully!")
+
+def changeBus(cur):
+    prompt = "\nThe given bus does not exist! Would you like to add it? [y/n]: "
+    tripNumber = handleInput("Enter the trip number for the offering or [R] to return: ", int)
+    
+    if not tripNumber:
+        return
+    
+    date = handleInput("Enter the date for the trip offering in MM-DD-YYYY format: ", str)
+    scheduledStart = handleInput("Enter the scheduled start time for the offering: ", str)
+
+    query = "SELECT * FROM TripOffering WHERE TripNumber = %s AND Date = %s AND ScheduledStartTime = %s"
+    recset = [tripNumber, date, scheduledStart]
+
+    cur.execute(query, recset)
+
+    if cur.fetchone() is None:
+        raise Exception("The given trip offering does not exist!")
+    
+    busID = handleInput("Enter the BusID you would like to use: ", int)
+
+    missingBuses = checkMissing(cur, [busID], "Bus", "BusID")
+
+    if missingBuses:
+        if confirmAddition(prompt):
+            addMissingBuses(cur, missingBuses)
+            print("New bus added!\n")
+        else:
+            return
+
+    query = "UPDATE TripOffering SET BusID = %s WHERE TripNumber = %s AND Date = %s AND ScheduledStartTime = %s"
+    recset = [busID, tripNumber, date, scheduledStart]
+
+    cur.execute(query, recset)
+    print("Bus updated successfully!")
 
 def checkMissingEntries(cur, setOfTripOfferings):
     tripNumbers = {offering['TripNumber'] for offering in setOfTripOfferings}
