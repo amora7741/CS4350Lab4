@@ -54,8 +54,18 @@ def displaySchedule(cur, startLocation, destination, date):
     if not output:
         raise Exception("There are no trip offerings for this trip.")
     
+    headers = ["startlocationname", "destinationname", "date", "scheduledstarttime", "scheduledarrivaltime", "drivername", "busid"]
+    maxLengths = {header: len(header) for header in headers}
     for row in output:
-        print(', '.join(map(str, row.values())))
+        for header in headers:
+            maxLengths[header] = max(maxLengths[header], len(str(row[header])))
+
+    headerLine = "   ".join(header.capitalize().ljust(maxLengths[header]) for header in headers)
+    print(headerLine)
+    print("=" * len(headerLine))
+    
+    for row in output:
+        print("   ".join(str(row[header]).ljust(maxLengths[header]) for header in headers))
 
 def editSchedule(cur, choice):
     if choice.lower() == "a":
@@ -222,17 +232,17 @@ def displayDriverSchedule(cur, driverName, startDate):
         raise Exception(f"No schedule found for {driverName} in the given week.")
     
     headers = ["tripnumber", "date", "scheduledstarttime", "scheduledarrivaltime", "drivername", "busid"]
-    max_lengths = {header: len(header) for header in headers}
+    maxLengths = {header: len(header) for header in headers}
     for trip in schedule:
         for header in headers:
-            max_lengths[header] = max(max_lengths[header], len(str(trip[header])))
+            maxLengths[header] = max(maxLengths[header], len(str(trip[header])))
 
-    header_line = "   ".join(header.capitalize().ljust(max_lengths[header]) for header in headers)
-    print(header_line)
-    print("=" * len(header_line))
+    headerLine = "   ".join(header.capitalize().ljust(maxLengths[header]) for header in headers)
+    print(headerLine)
+    print("=" * len(headerLine))
 
     for trip in schedule:
-        print("   ".join(str(trip[header]).ljust(max_lengths[header]) for header in headers))
+        print("   ".join(str(trip[header]).ljust(maxLengths[header]) for header in headers))
 
 def addDriver(cur, name, phone):
     query = "INSERT INTO Driver (DriverName, DriverTelephoneNumber) VALUES (%s, %s)"
