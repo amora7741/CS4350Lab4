@@ -74,8 +74,8 @@ def editSchedule(cur, choice):
         addOfferings(cur)
     elif choice.lower() == "c":
         changeDriver(cur)
-    elif choice.lower() == "d":
-        changeBus(cur)
+    #elif choice.lower() == "d":
+        #changeBus(cur)
     else:
         raise Exception("Invalid choice!")
 
@@ -153,33 +153,19 @@ def changeDriver(cur):
     
     driverName = handleInput("Enter the name of the driver you would like: ", str).lower()
 
-    query = "SELECT * FROM Driver WHERE DriverName = %s"
-    recset = [driverName]
+    missingDrivers = checkMissing(cur, [driverName], "Driver", "DriverName")
 
-    cur.execute(query, recset)
-
-    if cur.fetchone() is None:
-        if not confirmAddition(prompt):
+    if missingDrivers:
+        if confirmAddition(prompt):
+            addMissingDrivers(cur, missingDrivers)
+        else:
             return
-        
-        phone = handleInput("Enter the driver's phone number: ", str)
-        phoneNumber = ''.join(filter(str.isdigit, phone))
-
-        query = "INSERT INTO Driver (DriverName, DriverTelephoneNumber) VALUES (%s, %s)"
-        recset = [driverName, phoneNumber]
-
-        print("\nNew driver added!\n")
-
-        cur.execute(query, recset)
-        
 
     query = "UPDATE TripOffering SET DriverName = %s WHERE TripNumber = %s AND Date = %s AND ScheduledStartTime = %s"
     recset = [driverName, tripNumber, date, scheduledStart]
 
-
     cur.execute(query, recset)
-    print("Driver updated sucessfully!")
-
+    print("Driver updated successfully!")
 
 def checkMissingEntries(cur, setOfTripOfferings):
     tripNumbers = {offering['TripNumber'] for offering in setOfTripOfferings}
