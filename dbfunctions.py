@@ -65,7 +65,7 @@ def deleteOffering(cur):
     tripNumber = handleInput("Enter the trip number or [R] to return: ", int)
 
     if tripNumber:
-        date = handleInput("Enter the date for the offering: ", str)
+        date = handleInput("Enter the date for the offering in MM-DD-YYYY format: ", str)
         scheduledStart = handleInput("Enter the scheduled start time for the offering: ", str)
     else:
         return
