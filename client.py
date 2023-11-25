@@ -144,6 +144,11 @@ if __name__ == '__main__':
 
     createTables(conn, cur)
 
+    choice = input("Do you want to insert pre-existing data to the database? [y/n]: ")
+
+    if choice == "y":
+        insertDummyData(conn, cur)
+
     while True:
         printMenu()
         choice = input("Enter choice: ")

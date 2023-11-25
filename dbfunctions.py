@@ -497,3 +497,98 @@ def createTables(conn, cursor):
     except Exception as e:
         conn.rollback()
         print(f"Error creating tables: {e}")
+
+def insertDummyData(conn, cursor):
+    try:
+        trips = [
+            (1, 'Downtown Center', 'Greenfield Village'),
+            (2, 'Eastside Station', 'Westside Terminal'),
+            (3, 'North Plaza', 'South Beach'),
+            (4, 'City Hall', 'Harbor Point'),
+            (5, 'University Campus', 'Airport')
+        ]
+        for trip in trips:
+            cursor.execute(f"""
+                INSERT INTO Trip (TripNumber, StartLocationName, DestinationName)
+                VALUES ({trip[0]}, '{trip[1].lower()}', '{trip[2].lower()}');
+            """)
+
+        buses = [
+            (1, 'Volvo 9700', 2018),
+            (2, 'Mercedes-Benz Tourismo', 2020),
+            (3, 'Setra S417', 2019)
+        ]
+        for bus in buses:
+            cursor.execute(f"""
+                INSERT INTO Bus (BusID, Model, Year)
+                VALUES ({bus[0]}, '{bus[1].lower()}', {bus[2]});
+            """)
+
+        drivers = [
+            ('John Smith', '5551012021'),
+            ('Emily Johnson', '5552023032'),
+            ('Michael Brown', '5553034043')
+        ]
+        for driver in drivers:
+            cursor.execute(f"""
+                INSERT INTO Driver (DriverName, DriverTelephoneNumber)
+                VALUES ('{driver[0].lower()}', '{driver[1]}');
+            """)
+
+        stops = [
+            (1, '100 Main St.'),
+            (2, '200 Oak Ave.'),
+            (3, '300 Pine Rd.'),
+            (4, '400 Elm St.'),
+            (5, '500 Maple Dr.')
+        ]
+        for stop in stops:
+            cursor.execute(f"""
+                INSERT INTO Stop (StopNumber, StopAddress)
+                VALUES ({stop[0]}, '{stop[1].lower()}');
+            """)
+
+        tripOfferings = [
+            (1, '03-15-2023', '08:00 AM', '12:00 PM', 'John Smith', 1),
+            (2, '03-16-2023', '09:00 AM', '01:00 PM', 'Emily Johnson', 2),
+            (3, '03-17-2023', '10:00 AM', '02:00 PM', 'Michael Brown', 3),
+            (4, '03-18-2023', '11:00 AM', '03:00 PM', 'John Smith', 1),
+            (5, '03-19-2023', '12:00 PM', '04:00 PM', 'Emily Johnson', 2)
+        ]
+        for offering in tripOfferings:
+            cursor.execute(f"""
+                INSERT INTO TripOffering (TripNumber, Date, ScheduledStartTime, ScheduledArrivalTime, DriverName, BusID)
+                VALUES ({offering[0]}, '{offering[1]}', '{offering[2]}', '{offering[3]}', '{offering[4].lower()}', {offering[5]});
+            """)
+
+        actualTripStopInfo = [
+            (1, '03-15-2023', '08:00 AM', 1, '12:00 PM', '08:05 AM', '12:35 PM', 10, 5),
+            (2, '03-16-2023', '09:00 AM', 2, '01:00 PM', '09:05 AM', '01:35 PM', 15, 8),
+            (3, '03-17-2023', '10:00 AM', 3, '02:00 PM', '10:05 AM', '02:35 PM', 20, 10),
+            (4, '03-18-2023', '11:00 AM', 4, '03:00 PM', '11:05 AM', '03:35 PM', 25, 12),
+            (5, '03-19-2023', '12:00 PM', 5, '04:00 PM', '12:05 PM', '04:35 PM', 30, 15)
+        ]
+        for info in actualTripStopInfo:
+            cursor.execute(f"""
+                INSERT INTO ActualTripStopInfo (TripNumber, Date, ScheduledStartTime, StopNumber, ScheduledArrivalTime, ActualStartTime, ActualArrivalTime, NumberOfPassengerIn, NumberOfPassengerOut)
+                VALUES ({info[0]}, '{info[1]}', '{info[2]}', {info[3]}, '{info[4]}', '{info[5]}', '{info[6]}', {info[7]}, {info[8]});
+            """)
+
+        tripStopInfo = [
+            (1, 1, '1233', '1 Hour'),
+            (2, 2, '2143', '1 Hour'),
+            (3, 3, '3001', '3 Hours'),
+            (4, 4, '4412', '2 Hours'),
+            (5, 5, '5067', '5 Hours')
+        ]
+
+        for info in tripStopInfo:
+            cursor.execute(f"""
+                INSERT INTO TripStopInfo (TripNumber, StopNumber, SequenceNumber, DrivingTime)
+                VALUES ({info[0]}, {info[1]}, '{info[2]}', '{info[3]}');
+            """)
+
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        print(f"Exception: {e}")
