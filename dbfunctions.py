@@ -54,12 +54,30 @@ def displaySchedule(cur, startLocation, destination, date):
     if not output:
         raise Exception("There are no trip offerings for this trip.")
     
+    headers = ["startlocationname", "destinationname", "date", "scheduledstarttime", "scheduledarrivaltime", "drivername", "busid"]
+    maxLengths = {header: len(header) for header in headers}
     for row in output:
-        print(', '.join(map(str, row.values())))
+        for header in headers:
+            maxLengths[header] = max(maxLengths[header], len(str(row[header])))
+
+    headerLine = "   ".join(header.capitalize().ljust(maxLengths[header]) for header in headers)
+    print(headerLine)
+    print("=" * len(headerLine))
+    
+    for row in output:
+        print("   ".join(str(row[header]).ljust(maxLengths[header]) for header in headers))
 
 def editSchedule(cur, choice):
     if choice.lower() == "a":
         deleteOffering(cur)
+    elif choice.lower() == "b":
+        addOfferings(cur)
+    elif choice.lower() == "c":
+        changeDriver(cur)
+    elif choice.lower() == "d":
+        changeBus(cur)
+    else:
+        raise Exception("Invalid choice!")
 
 def deleteOffering(cur):
     tripNumber = handleInput("Enter the trip number or [R] to return: ", int)
@@ -83,6 +101,168 @@ def deleteOffering(cur):
     query = "DELETE FROM TripOffering WHERE TripNumber = %s AND Date = %s AND ScheduledStartTime = %s"
 
     cur.execute(query, recset)
+
+def addOfferings(cur):
+    prompt = "\nWould you like to add those missing entries into the parent tables?\nEnter 'y' to add or 'n' to cancel: "
+    numberToAdd = handleInput("How many would you like to add? (Enter [R] to return): ", int)
+
+    if not numberToAdd:
+        return
+
+    setOfTripOfferings = []
+    for i in range(1, numberToAdd + 1):
+        print("\n")
+        tripOffering = {
+            'TripNumber': handleInput(f"Enter the trip number for trip offering {i}: ", int),
+            'Date': handleInput(f"Enter the date for trip offering {i} in MM-DD-YYYY format: ", str),
+            'ScheduledStartTime': handleInput(f"Enter the Scheduled Start Time for trip offering {i}: ", str),
+            'ScheduledArrivalTime': handleInput(f"Enter the Scheduled Arrival Time for trip offering {i}: ", str),
+            'DriverName': handleInput(f"Enter the driver name for trip offering {i}: ", str).lower(),
+            'BusID': handleInput(f"Enter the BusID for trip offering {i}: ", int)
+        }
+        setOfTripOfferings.append(tripOffering)
+
+    missingTrips, missingDrivers, missingBusIDs = checkMissingEntries(cur, setOfTripOfferings)
+    
+    if missingDrivers or missingBusIDs or missingTrips:
+        print("Some values are missing in the parent tables for the given trip(s).")
+        if not confirmAddition(prompt):
+            return
+
+    addMissingEntries(cur, missingTrips, missingDrivers, missingBusIDs)
+
+    addTripOfferingsToDB(cur, setOfTripOfferings)
+
+def changeDriver(cur):
+    prompt = "\nThe given driver does not exist! Would you like to add them? [y/n]: "
+    tripNumber = handleInput("Enter the trip number for the offering or [R] to return: ", int)
+    
+    if not tripNumber:
+        return
+    
+    date = handleInput("Enter the date for the trip offering in MM-DD-YYYY format: ", str)
+    scheduledStart = handleInput("Enter the scheduled start time for the offering: ", str)
+
+    query = "SELECT * FROM TripOffering WHERE TripNumber = %s AND Date = %s AND ScheduledStartTime = %s"
+    recset = [tripNumber, date, scheduledStart]
+
+    cur.execute(query, recset)
+
+    if cur.fetchone() is None:
+        raise Exception("The given trip offering does not exist!")
+    
+    driverName = handleInput("Enter the name of the driver you would like: ", str).lower()
+
+    missingDrivers = checkMissing(cur, [driverName], "Driver", "DriverName")
+
+    if missingDrivers:
+        if confirmAddition(prompt):
+            addMissingDrivers(cur, missingDrivers)
+            print("New driver added!\n")
+        else:
+            return
+
+    query = "UPDATE TripOffering SET DriverName = %s WHERE TripNumber = %s AND Date = %s AND ScheduledStartTime = %s"
+    recset = [driverName, tripNumber, date, scheduledStart]
+
+    cur.execute(query, recset)
+    print("Driver updated successfully!")
+
+def changeBus(cur):
+    prompt = "\nThe given bus does not exist! Would you like to add it? [y/n]: "
+    tripNumber = handleInput("Enter the trip number for the offering or [R] to return: ", int)
+    
+    if not tripNumber:
+        return
+    
+    date = handleInput("Enter the date for the trip offering in MM-DD-YYYY format: ", str)
+    scheduledStart = handleInput("Enter the scheduled start time for the offering: ", str)
+
+    query = "SELECT * FROM TripOffering WHERE TripNumber = %s AND Date = %s AND ScheduledStartTime = %s"
+    recset = [tripNumber, date, scheduledStart]
+
+    cur.execute(query, recset)
+
+    if cur.fetchone() is None:
+        raise Exception("The given trip offering does not exist!")
+    
+    busID = handleInput("Enter the BusID you would like to use: ", int)
+
+    missingBuses = checkMissing(cur, [busID], "Bus", "BusID")
+
+    if missingBuses:
+        if confirmAddition(prompt):
+            addMissingBuses(cur, missingBuses)
+            print("New bus added!\n")
+        else:
+            return
+
+    query = "UPDATE TripOffering SET BusID = %s WHERE TripNumber = %s AND Date = %s AND ScheduledStartTime = %s"
+    recset = [busID, tripNumber, date, scheduledStart]
+
+    cur.execute(query, recset)
+    print("Bus updated successfully!")
+
+def checkMissingEntries(cur, setOfTripOfferings):
+    tripNumbers = {offering['TripNumber'] for offering in setOfTripOfferings}
+    driverNames = {offering['DriverName'] for offering in setOfTripOfferings}
+    busIDs = {offering['BusID'] for offering in setOfTripOfferings}
+
+    missingTrips = checkMissing(cur, tripNumbers, "Trip", "TripNumber")
+    missingDrivers = checkMissing(cur, driverNames, "Driver", "DriverName")
+    missingBusIDs = checkMissing(cur, busIDs, "Bus", "BusID")
+
+    return missingTrips, missingDrivers, missingBusIDs
+
+def checkMissing(cur, items, table, column):
+    missingItems = []
+    for item in items:
+        cur.execute(f"SELECT * FROM {table} WHERE {column} = %s", (item,))
+        if cur.fetchone() is None:
+            missingItems.append(item)
+    return missingItems
+
+def confirmAddition(prompt):
+    choice = handleInput(prompt, str).lower()
+    return choice == 'y'
+
+def addMissingEntries(cur, missingTrips, missingDrivers, missingBusIDs):
+    if missingTrips:
+        addMissingTrips(cur, missingTrips)
+    if missingDrivers:
+        addMissingDrivers(cur, missingDrivers)
+    if missingBusIDs:
+        addMissingBuses(cur, missingBusIDs)
+
+def addMissingTrips(cur, missingTrips):
+    for tripNumber in missingTrips:
+        print(f"\nAdding missing trip number {tripNumber}")
+        startLocation = handleInput("Enter the start location name: ", str).lower()
+        destinationName = handleInput("Enter the destination name: ", str).lower()
+        cur.execute("INSERT INTO Trip (TripNumber, StartLocationName, DestinationName) VALUES (%s, %s, %s)", 
+                    (tripNumber, startLocation, destinationName))
+
+def addMissingDrivers(cur, missingDrivers):
+    for driverName in missingDrivers:
+        print(f"\nAdding missing driver {driverName}")
+        phoneNumber = handleInput("Enter the driver's telephone number: ", str)
+        phoneNumber = ''.join(filter(str.isdigit, phoneNumber))
+        cur.execute("INSERT INTO Driver (DriverName, DriverTelephoneNumber) VALUES (%s, %s)", 
+                    (driverName, phoneNumber))
+
+def addMissingBuses(cur, missingBusIDs):
+    for busID in missingBusIDs:
+        print(f"\nAdding missing bus ID {busID}")
+        model = handleInput("Enter the bus model: ", str).lower()
+        year = handleInput("Enter the bus year: ", int)
+        cur.execute("INSERT INTO Bus (BusID, Model, Year) VALUES (%s, %s, %s)", 
+                    (busID, model, year))
+        
+def addTripOfferingsToDB(cur, setOfTripOfferings):
+    for offering in setOfTripOfferings:
+        cur.execute("INSERT INTO TripOffering (TripNumber, Date, ScheduledStartTime, ScheduledArrivalTime, DriverName, BusID) VALUES (%s, %s, %s, %s, %s, %s)", 
+                    (offering['TripNumber'], offering['Date'], offering['ScheduledStartTime'], offering['ScheduledArrivalTime'], offering['DriverName'], offering['BusID']))
+
 
 def displayStops(cur, tripNumber):
     query = "SELECT * FROM Trip WHERE TripNumber = %s"
@@ -126,9 +306,19 @@ def displayDriverSchedule(cur, driverName, startDate):
 
     if not schedule:
         raise Exception(f"No schedule found for {driverName} in the given week.")
+    
+    headers = ["tripnumber", "date", "scheduledstarttime", "scheduledarrivaltime", "drivername", "busid"]
+    maxLengths = {header: len(header) for header in headers}
+    for trip in schedule:
+        for header in headers:
+            maxLengths[header] = max(maxLengths[header], len(str(trip[header])))
+
+    headerLine = "   ".join(header.capitalize().ljust(maxLengths[header]) for header in headers)
+    print(headerLine)
+    print("=" * len(headerLine))
 
     for trip in schedule:
-        print(', '.join(map(str, trip.values())))
+        print("   ".join(str(trip[header]).ljust(maxLengths[header]) for header in headers))
 
 def addDriver(cur, name, phone):
     query = "INSERT INTO Driver (DriverName, DriverTelephoneNumber) VALUES (%s, %s)"
