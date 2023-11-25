@@ -60,6 +60,8 @@ def displaySchedule(cur, startLocation, destination, date):
 def editSchedule(cur, choice):
     if choice.lower() == "a":
         deleteOffering(cur)
+    elif choice.lower() == "b":
+        addOfferings(cur)
 
 def deleteOffering(cur):
     tripNumber = handleInput("Enter the trip number or [R] to return: ", int)
@@ -83,6 +85,95 @@ def deleteOffering(cur):
     query = "DELETE FROM TripOffering WHERE TripNumber = %s AND Date = %s AND ScheduledStartTime = %s"
 
     cur.execute(query, recset)
+
+def addOfferings(cur):
+    numberToAdd = handleInput("How many Trip Offerings to add?: ", int)
+
+    setOfTripOfferings = []
+    for i in range(1, numberToAdd + 1):
+        print("\n")
+        tripOffering = {
+            'TripNumber': handleInput(f"Enter the trip number for trip offering {i}: ", int),
+            'Date': handleInput(f"Enter the date for trip offering {i} in MM-DD-YYYY format: ", str),
+            'ScheduledStartTime': handleInput(f"Enter the Scheduled Start Time for trip offering {i}: ", str),
+            'ScheduledArrivalTime': handleInput(f"Enter the Scheduled Arrival Time for trip offering {i}: ", str),
+            'DriverName': handleInput(f"Enter the driver name for trip offering {i}: ", str).lower(),
+            'BusID': handleInput(f"Enter the BusID for trip offering {i}: ", int)
+        }
+        setOfTripOfferings.append(tripOffering)
+
+    missingTrips, missingDrivers, missingBusIDs = checkMissingEntries(cur, setOfTripOfferings)
+    
+    if missingDrivers or missingBusIDs or missingTrips:
+        print("Some values are missing in the parent tables for the given trip(s).")
+        if not confirmAddition():
+            return
+
+    addMissingEntries(cur, missingTrips, missingDrivers, missingBusIDs)
+
+    addTripOfferingsToDB(cur, setOfTripOfferings)
+
+
+def checkMissingEntries(cur, setOfTripOfferings):
+    tripNumbers = {offering['TripNumber'] for offering in setOfTripOfferings}
+    driverNames = {offering['DriverName'] for offering in setOfTripOfferings}
+    busIDs = {offering['BusID'] for offering in setOfTripOfferings}
+
+    missingTrips = checkMissing(cur, tripNumbers, "Trip", "TripNumber")
+    missingDrivers = checkMissing(cur, driverNames, "Driver", "DriverName")
+    missingBusIDs = checkMissing(cur, busIDs, "Bus", "BusID")
+
+    return missingTrips, missingDrivers, missingBusIDs
+
+def checkMissing(cur, items, table, column):
+    missingItems = []
+    for item in items:
+        cur.execute(f"SELECT * FROM {table} WHERE {column} = %s", (item,))
+        if cur.fetchone() is None:
+            missingItems.append(item)
+    return missingItems
+
+def confirmAddition():
+    choice = handleInput("\nWould you like to add those missing entries into the parent tables?\nEnter 'y' to add or 'n' to cancel: ", str).lower()
+    return choice == 'y'
+
+def addMissingEntries(cur, missingTrips, missingDrivers, missingBusIDs):
+    if missingTrips:
+        addMissingTrips(cur, missingTrips)
+    if missingDrivers:
+        addMissingDrivers(cur, missingDrivers)
+    if missingBusIDs:
+        addMissingBuses(cur, missingBusIDs)
+
+def addMissingTrips(cur, missingTrips):
+    for tripNumber in missingTrips:
+        print(f"\nAdding missing trip number {tripNumber}")
+        startLocation = handleInput("Enter the start location name: ", str).lower()
+        destinationName = handleInput("Enter the destination name: ", str).lower()
+        cur.execute("INSERT INTO Trip (TripNumber, StartLocationName, DestinationName) VALUES (%s, %s, %s)", 
+                    (tripNumber, startLocation, destinationName))
+
+def addMissingDrivers(cur, missingDrivers):
+    for driverName in missingDrivers:
+        print(f"\nAdding missing driver {driverName}")
+        phoneNumber = handleInput("Enter the driver's telephone number: ", str)
+        phoneNumber = ''.join(filter(str.isdigit, phoneNumber))
+        cur.execute("INSERT INTO Driver (DriverName, DriverTelephoneNumber) VALUES (%s, %s)", 
+                    (driverName, phoneNumber))
+
+def addMissingBuses(cur, missingBusIDs):
+    for busID in missingBusIDs:
+        print(f"\nAdding missing bus ID {busID}")
+        model = handleInput("Enter the bus model: ", str).lower()
+        year = handleInput("Enter the bus year: ", int)
+        cur.execute("INSERT INTO Bus (BusID, Model, Year) VALUES (%s, %s, %s)", 
+                    (busID, model, year))
+        
+def addTripOfferingsToDB(cur, setOfTripOfferings):
+    for offering in setOfTripOfferings:
+        cur.execute("INSERT INTO TripOffering (TripNumber, Date, ScheduledStartTime, ScheduledArrivalTime, DriverName, BusID) VALUES (%s, %s, %s, %s, %s, %s)", 
+                    (offering['TripNumber'], offering['Date'], offering['ScheduledStartTime'], offering['ScheduledArrivalTime'], offering['DriverName'], offering['BusID']))
+
 
 def displayStops(cur, tripNumber):
     query = "SELECT * FROM Trip WHERE TripNumber = %s"
