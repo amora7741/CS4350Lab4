@@ -50,6 +50,7 @@ def switch(choice, cur, con):
         if tripNumber is not None:
             try:
                 displayStops(cur, tripNumber)
+                con.commit()
             except Exception as e:
                 print(f"Exception: {e}")
                 con.rollback()

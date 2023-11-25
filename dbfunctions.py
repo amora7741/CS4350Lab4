@@ -281,12 +281,38 @@ def displayStops(cur, tripNumber):
     cur.execute(query, recset)
     stopInfo = cur.fetchall()
 
-    if(len(stopInfo) == 0):
+    if len(stopInfo) == 0:
         print("This trip has no stop data.")
+        prompt = "Would you like to add stop information for this trip? (y/n): "
+        if confirmAddition(prompt):
+            addTripStopInfo(cur, tripNumber)
         return
-    
+
     for row in stopInfo:
         print(', '.join(map(str, row.values())))
+
+def addTripStopInfo(cur, tripNumber):
+    stopCount = handleInput("How many stops would you like to add? ", int)
+    for _ in range(stopCount):
+        stopNum = handleInput("Enter Stop Number: ", int)
+        sequenceNum = handleInput("Enter Sequence Number: ", str)
+        drivingTime = handleInput("Enter Driving Time: ", str)
+
+        cur.execute("SELECT * FROM Stop WHERE StopNumber = %s", (stopNum,))
+        if cur.fetchone() is None:
+            prompt = f"Stop number {stopNum} does not exist. Would you like to add it? (y/n): "
+            if confirmAddition(prompt):
+                addStop(cur, stopNum)
+            else:
+                return
+        
+        cur.execute("INSERT INTO TripStopInfo (TripNumber, StopNumber, SequenceNumber, DrivingTime) VALUES (%s, %s, %s, %s)", 
+                    (tripNumber, stopNum, sequenceNum, drivingTime))
+
+def addStop(cur, stopNum):
+    stopAddress = handleInput("Enter Stop Address: ", str)
+    cur.execute("INSERT INTO Stop (StopNumber, StopAddress) VALUES (%s, %s)", (stopNum, stopAddress))
+    print(f"Stop {stopNum} added successfully.")
 
 def displayDriverSchedule(cur, driverName, startDate):
     try:
