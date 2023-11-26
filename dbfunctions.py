@@ -61,6 +61,7 @@ def displaySchedule(cur, startLocation, destination, date):
             maxLengths[header] = max(maxLengths[header], len(str(row[header])))
 
     headerLine = "   ".join(header.capitalize().ljust(maxLengths[header]) for header in headers)
+    print("\n")
     print(headerLine)
     print("=" * len(headerLine))
     
@@ -296,6 +297,7 @@ def displayStops(cur, tripNumber):
             maxLengths[header] = max(maxLengths[header], len(str(row[header])))
 
     headerLine = "   ".join(header.capitalize().ljust(maxLengths[header]) for header in headers)
+    print("\n")
     print(headerLine)
     print("=" * len(headerLine))
     
@@ -355,6 +357,7 @@ def displayDriverSchedule(cur, driverName, startDate):
             maxLengths[header] = max(maxLengths[header], len(str(trip[header])))
 
     headerLine = "   ".join(header.capitalize().ljust(maxLengths[header]) for header in headers)
+    print("\n")
     print(headerLine)
     print("=" * len(headerLine))
 
